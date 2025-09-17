@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Resume Review · Velkit</title>
+<link rel="stylesheet" href="/cs50/styles.css">
+</head><body>
+<header><a href="/" class="sub"><img src="/velkit-logo.png" width="32" height="32"> Velkit</a></header>
+<main class="container">
+  <h1>Resume Review</h1>
+  <form id="f" class="card grid">
+    <input type="file" name="resume" accept=".pdf,.docx,.txt" required>
+    <textarea name="job_description" placeholder="Paste job description" required></textarea>
+    <button class="btn">Review</button>
+  </form>
+  <section id="out" class="card hidden">
+    <h2>ATS Score</h2><p id="score"></p>
+    <h2>Missing Keywords</h2><ul id="kw"></ul>
+    <h2>Rewrite Suggestions</h2><ul id="rw"></ul>
+  </section>
+</main>
+<script src="/cs50/js/review.js"></script>
+</body></html>

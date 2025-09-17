@@ -1,0 +1,24 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Resume & Cover Letter Builder · Velkit</title>
+<link rel="stylesheet" href="/cs50/styles.css">
+</head><body>
+<header><a href="/" class="sub"><img src="/velkit-logo.png" alt="" width="32" height="32"> Velkit</a></header>
+<main class="container">
+  <h1>Resume & Cover Letter Builder</h1>
+  <form id="f" class="card grid">
+    <input name="name" placeholder="Your name" required>
+    <input name="contact" placeholder="Contact (email/phone/location)" required>
+    <input name="role" placeholder="Target role" required>
+    <input name="years_exp" type="number" min="0" placeholder="Years of experience">
+    <input name="skills" placeholder="Key skills (comma-separated)">
+    <textarea name="job_description" placeholder="Paste job description" required></textarea>
+    <button class="btn">Generate</button>
+  </form>
+  <section id="out" class="card hidden">
+    <h2>Cover Letter</h2><pre id="cl"></pre>
+    <h2>Resume</h2><pre id="cv"></pre>
+  </section>
+</main>
+<script src="/cs50/js/builder.js"></script>
+</body></html>

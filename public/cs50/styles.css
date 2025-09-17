@@ -1,0 +1,12 @@
+.container{max-width:64rem;margin:0 auto;padding:2rem}
+.card{border:1px solid #e5e7eb;border-radius:0.75rem;padding:1rem}
+.btn{background:#000;color:#fff;border-radius:0.5rem;padding:0.5rem 1rem}
+.sub{color:#6b7280;font-size:0.9rem}
+.hidden{display:none}
+.grid{display:grid;gap:1rem}
+@media(min-width:640px){.grid-2{grid-template-columns:1fr 1fr}}
+textarea,input{width:100%;padding:.5rem;border:1px solid #e5e7eb;border-radius:.5rem}
+pre{white-space:pre-wrap}
+h1{font-size:1.25rem;margin:.5rem 0}
+h2{font-size:1.1rem;margin:.5rem 0}
+header{border-bottom:1px solid #e5e7eb;padding:.75rem 1rem}
