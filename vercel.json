@@ -1,6 +1,5 @@
 {
   "version": 2,
-  "public": true,
   "builds": [
     {
       "src": "api/builder/index.py",
@@ -14,12 +13,24 @@
       "methods": ["GET", "POST", "OPTIONS"]
     },
     {
-      "src": "/builder.html",
+      "src": "/",
+      "dest": "/public/index.html"
+    },
+    {
+      "src": "/builder",
       "dest": "/public/builder.html"
     },
     {
-      "src": "/velkit-logo.png",
-      "dest": "/public/velkit-logo.png"
+      "src": "/review",
+      "dest": "/public/review.html"
+    },
+    {
+      "src": "/training",
+      "dest": "/public/training.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
     }
   ]
 }
