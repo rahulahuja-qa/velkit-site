@@ -1,3 +1,6 @@
+import sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
+
 from flask import Flask, request, jsonify, make_response
 from _lib.ai_client import ask_json
 
