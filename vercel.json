@@ -1,20 +1,25 @@
 {
   "version": 2,
+  "public": true,
   "builds": [
     {
-      "src": "api/**/*.py",
+      "src": "api/builder/index.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/builder",
-      "dest": "/api/builder/index.py",
-      "methods": ["POST", "GET", "OPTIONS"]
+      "dest": "api/builder/index.py",
+      "methods": ["GET", "POST", "OPTIONS"]
     },
     {
-      "src": "/(.*)",
-      "dest": "/public/$1"
+      "src": "/builder.html",
+      "dest": "/public/builder.html"
+    },
+    {
+      "src": "/velkit-logo.png",
+      "dest": "/public/velkit-logo.png"
     }
   ]
 }
