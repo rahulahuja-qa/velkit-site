@@ -13,6 +13,18 @@
       "dest": "api/builder/index.py"
     },
     {
+      "src": "/builder",
+      "dest": "/public/builder.html"
+    },
+    {
+      "src": "/review",
+      "dest": "/public/review.html"
+    },
+    {
+      "src": "/trainings",
+      "dest": "/public/trainings.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/public/$1"
     }
