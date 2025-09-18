@@ -2,19 +2,18 @@
   "version": 2,
   "builds": [
     {
-      "src": "api/builder/index.py",
+      "src": "api/**/*.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/builder",
-      "dest": "api/builder/index.py",
-      "methods": ["GET", "POST", "OPTIONS"]
-    },
-    {
       "src": "/",
       "dest": "/public/index.html"
+    },
+    {
+      "src": "/api/builder",
+      "dest": "api/builder/index.py"
     },
     {
       "src": "/builder",
@@ -25,8 +24,8 @@
       "dest": "/public/review.html"
     },
     {
-      "src": "/training",
-      "dest": "/public/training.html"
+      "src": "/trainings",
+      "dest": "/public/trainings.html"
     },
     {
       "src": "/(.*)",
