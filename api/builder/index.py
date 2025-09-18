@@ -1,3 +1,5 @@
+import os
+import json
 from flask import Flask, request, jsonify, make_response
 from _lib.ai_client import ask_json
 
