@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
-from ._lib.parsers import read_text_from_upload
-from ._lib.scoring import score_resume_vs_jd
-from ._lib.ai_client import ask_json
+from _lib.parsers import read_text_from_upload
+from _lib.scoring import score_resume_vs_jd
+from _lib.ai_client import ask_json
 
 app = Flask(__name__)
 

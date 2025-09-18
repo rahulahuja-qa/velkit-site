@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from ._lib.ai_client import ask_json
+from _lib.ai_client import ask_json
 
 app = Flask(__name__)
 
