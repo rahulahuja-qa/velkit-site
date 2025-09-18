@@ -1,6 +1,8 @@
 import os
 import json
 from flask import Flask, request, jsonify, make_response
+import sys, pathlib
+sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
 from _lib.ai_client import ask_json
 
 app = Flask(__name__)
