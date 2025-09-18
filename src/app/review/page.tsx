@@ -1,21 +1,40 @@
 "use client";
 import { useState } from "react";
 
+type SectionFeedback = {
+  Summary?: string;
+  Experience?: string;
+  Skills?: string;
+  Education?: string;
+};
+type ReviewResponse = {
+  ats_score?: number;
+  missing_keywords?: string[];
+  rewrite_suggestions?: string[];
+  section_feedback?: SectionFeedback;
+  error?: string;
+};
+
 export default function Review() {
   const [loading, setLoading] = useState(false);
-  const [out, setOut] = useState<any>(null);
+  const [out, setOut] = useState<ReviewResponse | null>(null);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setLoading(true); setOut(null);
+    setLoading(true);
+    setOut(null);
+
     const fd = new FormData(e.currentTarget);
     const r = await fetch("/api/review", { method: "POST", body: fd });
-    setOut(await r.json()); setLoading(false);
+    const data: ReviewResponse = await r.json();
+    setOut(data);
+    setLoading(false);
   }
 
   return (
     <main className="mx-auto max-w-5xl p-8 space-y-6">
       <h1 className="text-3xl font-bold">Resume Review</h1>
+
       <form onSubmit={submit} className="rounded-2xl border p-6 grid gap-4">
         <input type="file" name="resume" accept=".pdf,.docx,.txt" className="border rounded-lg p-3" required />
         <textarea name="job_description" className="border rounded-lg p-3 min-h-40" placeholder="Paste job description" required />
@@ -23,6 +42,7 @@ export default function Review() {
           {loading ? "Reviewing…" : "Review"}
         </button>
       </form>
+
       {out && (
         <section className="grid gap-4">
           <div className="rounded-2xl border p-6">
@@ -32,13 +52,17 @@ export default function Review() {
           <div className="rounded-2xl border p-6">
             <h2 className="text-lg font-semibold">Missing Keywords</h2>
             <ul className="list-disc pl-6 mt-2">
-              {(out.missing_keywords || []).map((k: string) => <li key={k}>{k}</li>)}
+              {(out.missing_keywords ?? []).map((k) => (
+                <li key={k}>{k}</li>
+              ))}
             </ul>
           </div>
           <div className="rounded-2xl border p-6">
             <h2 className="text-lg font-semibold">Rewrite Suggestions</h2>
             <ul className="list-disc pl-6 mt-2">
-              {(out.rewrite_suggestions || []).map((s: string, i: number) => <li key={i}>{s}</li>)}
+              {(out.rewrite_suggestions ?? []).map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
             </ul>
           </div>
         </section>
