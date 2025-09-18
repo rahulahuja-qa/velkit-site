@@ -1,28 +1,15 @@
 {
   "version": 2,
-  "public": true,
   "builds": [
     {
-      "src": "api/**/*.py",
+      "src": "public/api/**/*.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/builder",
-      "dest": "api/builder/index.py"
-    },
-    {
-      "src": "/builder",
-      "dest": "/public/builder.html"
-    },
-    {
-      "src": "/review",
-      "dest": "/public/review.html"
-    },
-    {
-      "src": "/trainings",
-      "dest": "/public/trainings.html"
+      "dest": "/public/api/builder/index.py"
     },
     {
       "src": "/(.*)",
