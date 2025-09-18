@@ -13,18 +13,16 @@ def handle():
         resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS, GET"
         resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
         return resp
-
     if request.method == "GET":
         return jsonify({"ok": True, "service": "review"}), 200
 
-    # POST (multipart)
     jd = request.form.get("job_description", "").strip()
     fs = request.files.get("resume")
     if not jd or not fs:
         return jsonify({"error": "resume and job_description required"}), 400
 
     resume_text = read_text_from_upload(fs)
-    ats_score, _band = score_resume_vs_jd(resume_text, jd)
+    ats_score, _ = score_resume_vs_jd(resume_text, jd)
 
     system = (
         "You are a resume reviewer. Compare resume to job description. "

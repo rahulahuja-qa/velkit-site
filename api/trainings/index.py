@@ -11,11 +11,9 @@ def handle():
         resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS, GET"
         resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
         return resp
-
     if request.method == "GET":
         return jsonify({"ok": True, "service": "trainings"}), 200
 
-    # POST
     d = request.get_json(force=True, silent=True) or {}
     payload = {
         "target_role": str(d.get("target_role", "")).strip(),

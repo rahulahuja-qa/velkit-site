@@ -5,16 +5,16 @@ app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST", "OPTIONS"])
 def handle():
+    # CORS preflight
     if request.method == "OPTIONS":
         resp = make_response("", 204)
         resp.headers["Access-Control-Allow-Origin"] = "*"
         resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS, GET"
         resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
         return resp
-
+    # Health
     if request.method == "GET":
         return jsonify({"ok": True, "service": "builder"}), 200
-
     # POST
     d = request.get_json(force=True, silent=True) or {}
     payload = {
