@@ -1,9 +1,8 @@
 from flask import Flask, request, jsonify, make_response, send_file
+from io import BytesIO
 from api._lib.parsers import read_text_from_upload
 from api._lib.ai_client import ask_json
 from api._lib.docx_utils import docx_from_review
-from io import BytesIO
-
 
 app = Flask(__name__)
 
@@ -20,7 +19,6 @@ def handle():
         return jsonify({"error":"resume and job_description required"}), 400
 
     resume_text = read_text_from_upload(fs)
-
     sys = ("You are a resume reviewer. Compare resume to job description. "
            "Return ONLY JSON: {ats_score:int, missing_keywords:[string], "
            "section_feedback:{Summary,Experience,Skills,Education}, "
@@ -31,9 +29,7 @@ def handle():
         data = docx_from_review(result)
         return _docx(data, "velkit-review.docx")
 
-    resp = jsonify(result)
-    resp.headers["Access-Control-Allow-Origin"] = "*"
-    return resp
+    r = jsonify(result); r.headers["Access-Control-Allow-Origin"] = "*"; return r
 
 def _preflight():
     r = make_response("", 204)
@@ -44,9 +40,6 @@ def _preflight():
 
 def _docx(data: bytes, filename: str):
     bio = BytesIO(data); bio.seek(0)
-    return send_file(
-        bio,
+    return send_file(bio,
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        as_attachment=True,
-        download_name=filename
-    )
+        as_attachment=True, download_name=filename)

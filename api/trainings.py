@@ -1,8 +1,7 @@
 from flask import Flask, request, jsonify, make_response, send_file
+from io import BytesIO
 from api._lib.ai_client import ask_json
 from api._lib.docx_utils import docx_from_trainings
-from io import BytesIO
-
 
 app = Flask(__name__)
 
@@ -28,9 +27,7 @@ def handle():
         data = docx_from_trainings(result.get("plan") or [])
         return _docx(data, "velkit-trainings.docx")
 
-    resp = jsonify(result)
-    resp.headers["Access-Control-Allow-Origin"] = "*"
-    return resp
+    r = jsonify(result); r.headers["Access-Control-Allow-Origin"] = "*"; return r
 
 def _preflight():
     r = make_response("", 204)
@@ -41,9 +38,6 @@ def _preflight():
 
 def _docx(data: bytes, filename: str):
     bio = BytesIO(data); bio.seek(0)
-    return send_file(
-        bio,
+    return send_file(bio,
         mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        as_attachment=True,
-        download_name=filename
-    )
+        as_attachment=True, download_name=filename)
