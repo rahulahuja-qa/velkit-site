@@ -1,0 +1,70 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Trainings & Certifications · Velkit</title>
+<link rel="stylesheet" href="/assets/styles.css"/>
+</head><body>
+<header>
+  <div class="container" style="display:flex;align-items:center;gap:.75rem">
+    <a href="/" style="display:flex;align-items:center;gap:.75rem">
+      <img src="/assets/velkit-logo.png" alt="Velkit" style="height:40px;width:auto"/>
+    </a>
+    <a href="mailto:hello@velkit.io" class="btn" style="margin-left:auto">Contact</a>
+  </div>
+</header>
+
+<main class="container">
+  <h1>Trainings &amp; Certifications</h1>
+  <form id="f" class="card" style="display:grid;gap:1rem">
+    <input name="target_role" placeholder="Target role" required/>
+    <input name="current_skills" placeholder="Current skills (comma-separated)"/>
+    <input name="interests" placeholder="Interests (comma-separated)"/>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <button class="btn" id="btnGen" type="submit">Recommend</button>
+      <button class="btn" id="btnDocx" type="button">Download .docx</button>
+    </div>
+  </form>
+
+  <div id="plan" class="grid"></div>
+</main>
+
+<script>
+const f = document.getElementById("f");
+const plan = document.getElementById("plan");
+
+function bodyFrom(fd){
+  return {
+    target_role: String(fd.get("target_role")||""),
+    current_skills: String(fd.get("current_skills")||"").split(",").map(s=>s.trim()).filter(Boolean),
+    interests: String(fd.get("interests")||"").split(",").map(s=>s.trim()).filter(Boolean)
+  };
+}
+
+f.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const r = await fetch("/api/trainings?format=json", {
+    method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(bodyFrom(new FormData(f)))
+  });
+  if(!r.ok){ alert("Request failed: " + r.status); return; }
+  const j = await r.json();
+  plan.innerHTML = (j.plan||[]).map(p=>`
+    <div class="card">
+      <div style="font-weight:600">${p.title}</div>
+      <div class="muted">${p.provider} • ${p.level} • ~${p.estimated_hours}h</div>
+      <p>${p.why}</p>
+    </div>`).join("");
+});
+
+document.getElementById("btnDocx").addEventListener("click", async ()=>{
+  const r = await fetch("/api/trainings?format=docx", {
+    method:"POST", headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify(bodyFrom(new FormData(f)))
+  });
+  if(!r.ok){ alert("Request failed: " + r.status); return; }
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement("a"), { href: url, download: "velkit-trainings.docx" });
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+</script>
+</body></html>

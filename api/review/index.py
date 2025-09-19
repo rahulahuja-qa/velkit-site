@@ -1,44 +1,51 @@
-import sys, pathlib
-sys.path.append(str(pathlib.Path(__file__).resolve().parent.parent))
-
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, send_file
 from _lib.parsers import read_text_from_upload
-from _lib.scoring import score_resume_vs_jd
 from _lib.ai_client import ask_json
+from _lib.docx_utils import docx_from_review
+from io import BytesIO
 
 app = Flask(__name__)
 
 @app.route("/", methods=["GET", "POST", "OPTIONS"])
 def handle():
     if request.method == "OPTIONS":
-        resp = make_response("", 204)
-        resp.headers["Access-Control-Allow-Origin"] = "*"
-        resp.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS, GET"
-        resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-        return resp
+        return _preflight()
     if request.method == "GET":
-        return jsonify({"ok": True, "service": "review"}), 200
+        return jsonify({"ok": True, "service": "review"})
 
-    jd = request.form.get("job_description", "").strip()
+    jd = request.form.get("job_description","").strip()
     fs = request.files.get("resume")
     if not jd or not fs:
-        return jsonify({"error": "resume and job_description required"}), 400
+        return jsonify({"error":"resume and job_description required"}), 400
 
     resume_text = read_text_from_upload(fs)
-    ats_score, _ = score_resume_vs_jd(resume_text, jd)
 
-    system = (
-        "You are a resume reviewer. Compare resume to job description. "
-        "Return ONLY JSON: {section_feedback:{Summary,Experience,Skills,Education}, "
-        "rewrite_suggestions:[string], missing_keywords:[string]}"
-    )
-    llm = ask_json(system, {"job_description": jd, "resume_text": resume_text})
-    payload = {
-        "ats_score": ats_score,
-        "missing_keywords": llm.get("missing_keywords") or [],
-        "section_feedback": llm.get("section_feedback"),
-        "rewrite_suggestions": llm.get("rewrite_suggestions"),
-    }
-    resp = jsonify(payload)
+    sys = ("You are a resume reviewer. Compare resume to job description. "
+           "Return ONLY JSON: {ats_score:int, missing_keywords:[string], "
+           "section_feedback:{Summary,Experience,Skills,Education}, "
+           "rewrite_suggestions:[string]}")
+    result = ask_json(sys, {"job_description": jd, "resume_text": resume_text})
+
+    if request.args.get("format") == "docx" and not result.get("error"):
+        data = docx_from_review(result)
+        return _docx(data, "velkit-review.docx")
+
+    resp = jsonify(result)
     resp.headers["Access-Control-Allow-Origin"] = "*"
     return resp
+
+def _preflight():
+    r = make_response("", 204)
+    r.headers["Access-Control-Allow-Origin"]  = "*"
+    r.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS, GET"
+    r.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return r
+
+def _docx(data: bytes, filename: str):
+    bio = BytesIO(data); bio.seek(0)
+    return send_file(
+        bio,
+        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        as_attachment=True,
+        download_name=filename
+    )

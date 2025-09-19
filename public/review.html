@@ -1,0 +1,62 @@
+<!doctype html><html lang="en"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Resume Review · Velkit</title>
+<link rel="stylesheet" href="/assets/styles.css"/>
+</head><body>
+<header>
+  <div class="container" style="display:flex;align-items:center;gap:.75rem">
+    <a href="/" style="display:flex;align-items:center;gap:.75rem">
+      <img src="/assets/velkit-logo.png" alt="Velkit" style="height:40px;width:auto"/><span style="font-weight:600;font-size:1.125rem">Velkit</span>
+    </a>
+    <a href="mailto:hello@velkit.io" class="btn" style="margin-left:auto">Contact</a>
+  </div>
+</header>
+
+<main class="container">
+  <h1>Resume Review</h1>
+  <form id="f" class="card" style="display:grid;gap:1rem">
+    <input type="file" name="resume" accept=".pdf,.docx,.txt" required/>
+    <textarea name="job_description" placeholder="Paste job description" required></textarea>
+    <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+      <button class="btn" id="btnGen" type="submit">Review</button>
+      <button class="btn" id="btnDocx" type="button">Download .docx</button>
+    </div>
+  </form>
+
+  <section id="out" class="grid hidden">
+    <div class="card"><h2>ATS Score</h2><p id="score" style="font-size:1.5rem"></p></div>
+    <div class="card"><h2>Missing Keywords</h2><ul id="kw"></ul></div>
+    <div class="card"><h2>Rewrite Suggestions</h2><ul id="rw"></ul></div>
+  </section>
+</main>
+
+<script>
+const f = document.getElementById("f");
+const out = document.getElementById("out");
+const score = document.getElementById("score");
+const kw = document.getElementById("kw");
+const rw = document.getElementById("rw");
+
+f.addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  const fd = new FormData(f);
+  const r = await fetch("/api/review?format=json", { method:"POST", body: fd });
+  if(!r.ok){ alert("Request failed: " + r.status); return; }
+  const j = await r.json();
+  out.classList.remove("hidden");
+  score.textContent = j.ats_score ?? "-";
+  kw.innerHTML = (j.missing_keywords||[]).map(k=>`<li>${k}</li>`).join("");
+  rw.innerHTML = (j.rewrite_suggestions||[]).map(s=>`<li>${s}</li>`).join("");
+});
+
+document.getElementById("btnDocx").addEventListener("click", async ()=>{
+  const fd = new FormData(f);
+  const r = await fetch("/api/review?format=docx", { method:"POST", body: fd });
+  if(!r.ok){ alert("Request failed: " + r.status); return; }
+  const blob = await r.blob();
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement("a"), { href: url, download: "velkit-review.docx" });
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+</script>
+</body></html>
