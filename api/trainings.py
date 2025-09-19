@@ -1,43 +1,53 @@
-from flask import Flask, request, jsonify, make_response, send_file
-from io import BytesIO
+from http.server import BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+import json
 from api._lib.ai_client import ask_json
 from api._lib.docx_utils import docx_from_trainings
 
-app = Flask(__name__)
+def _cors(s):
+    s.send_header("Access-Control-Allow-Origin", "*")
+    s.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+    s.send_header("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
-@app.route("/", methods=["GET", "POST", "OPTIONS"])
-def handle():
-    if request.method == "OPTIONS":
-        return _preflight()
-    if request.method == "GET":
-        return jsonify({"ok": True, "service": "trainings"})
+class handler(BaseHTTPRequestHandler):
+    def do_OPTIONS(self):
+        self.send_response(204); _cors(self); self.end_headers()
 
-    d = request.get_json(force=True, silent=True) or {}
-    payload = {
-        "target_role": str(d.get("target_role","")).strip(),
-        "current_skills": d.get("current_skills") or [],
-        "interests": d.get("interests") or []
-    }
-    sys = ("Recommend a staged plan. Return ONLY JSON: "
-           "{plan:[{title,provider,level,why,estimated_hours:int}]} "
-           "Use reputable providers (edX, Coursera, Google, AWS, Azure, PMI, etc.)")
-    result = ask_json(sys, payload)
+    def do_GET(self):
+        self.send_response(200); _cors(self)
+        self.send_header("Content-Type", "application/json"); self.end_headers()
+        self.wfile.write(b'{"ok": true, "service": "trainings"}')
 
-    if request.args.get("format") == "docx" and not result.get("error"):
-        data = docx_from_trainings(result.get("plan") or [])
-        return _docx(data, "velkit-trainings.docx")
+    def do_POST(self):
+        length = int(self.headers.get("content-length","0"))
+        raw = self.rfile.read(length).decode("utf-8") if length else "{}"
+        try:
+            d = json.loads(raw) if raw else {}
+        except Exception:
+            d = {}
+        payload = {
+            "target_role": str(d.get("target_role","")).strip(),
+            "current_skills": d.get("current_skills") or [],
+            "interests": d.get("interests") or [],
+        }
+        system = ("Recommend a staged plan. Return ONLY JSON: "
+                  "{plan:[{title,provider,level,why,estimated_hours:int}]}. "
+                  "Use reputable providers (edX, Coursera, Google, AWS, Azure, PMI, etc.)")
+        result = ask_json(system, payload)
 
-    r = jsonify(result); r.headers["Access-Control-Allow-Origin"] = "*"; return r
+        qs = parse_qs(urlparse(self.path).query)
+        want_docx = (qs.get("format", ["json"])[0] == "docx")
 
-def _preflight():
-    r = make_response("", 204)
-    r.headers["Access-Control-Allow-Origin"]  = "*"
-    r.headers["Access-Control-Allow-Methods"] = "POST, OPTIONS, GET"
-    r.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    return r
+        if want_docx and not result.get("error"):
+            data = docx_from_trainings(result.get("plan") or [])
+            self.send_response(200); _cors(self)
+            self.send_header("Content-Type",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+            self.send_header("Content-Disposition", 'attachment; filename="velkit-trainings.docx"')
+            self.end_headers()
+            self.wfile.write(data); return
 
-def _docx(data: bytes, filename: str):
-    bio = BytesIO(data); bio.seek(0)
-    return send_file(bio,
-        mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        as_attachment=True, download_name=filename)
+        out = json.dumps(result).encode("utf-8")
+        self.send_response(200); _cors(self)
+        self.send_header("Content-Type","application/json"); self.end_headers()
+        self.wfile.write(out)
