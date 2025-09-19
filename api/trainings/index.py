@@ -1,7 +1,8 @@
 from flask import Flask, request, jsonify, make_response, send_file
-from _lib.ai_client import ask_json
-from _lib.docx_utils import docx_from_trainings
+from api._lib.ai_client import ask_json
+from api._lib.docx_utils import docx_from_trainings
 from io import BytesIO
+
 
 app = Flask(__name__)
 
